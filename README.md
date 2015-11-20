@@ -81,17 +81,17 @@ See the [nvm](https://github.com/creationix/nvm) website for detailed installati
 ````
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash
 
-nvm install 4.2.1
+nvm install 4.2.2
 ````
 
 Verify your `node` installation:
 
 ````
 $ which node
-~/.nvm/versions/node/v4.2.1/bin/node
+~/.nvm/versions/node/v4.2.2/bin/node
 
 $ which npm
-~/.nvm/versions/node/v4.2.1/bin/npm
+~/.nvm/versions/node/v4.2.2/bin/npm
 ````
 
 # Build the client and server

@@ -10,7 +10,7 @@
     "url": "git://github.com/SpiderOak/crypton.git"
   },
   "engines": {
-    "node": "0.12.x"
+    "node": "4.2.x"
   },
   "bin": {
     "crypton-server": "bin/cli.js"
