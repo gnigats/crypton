@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the Affero GNU General Public License
  * along with Crypton Server.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 'use strict';
 
@@ -47,7 +47,7 @@ exports.saveAccount = function saveAccount(account, callback) {
     'srpSalt',
     'signKeyPub',
     'signKeyPrivateCiphertext',
-    'signKeyPrivateMac'
+    'signKeyPrivateMac',
   ];
 
   for (var i in requiredFields) {
@@ -57,37 +57,37 @@ exports.saveAccount = function saveAccount(account, callback) {
     }
   }
 
-  connect(function (client, done) {
+  connect(function(client, done) {
     client.query('begin');
 
     var checkAccountFreeQuery = {
       text: 'select username from account where username = $1',
       values: [
-        account.username
-      ]
+        account.username,
+      ],
     };
 
-    client.query(checkAccountFreeQuery, function (err, result) {
+    client.query(checkAccountFreeQuery, function(err, result) {
       if (err) {
         client.query('rollback');
         done();
-	return callback(err);
+        return callback(err);
       }
 
       if (!result.rowCount) {
-	// No other account by this name: proceed
-	var accountQuery = {
-	  text: '\
+        // No other account by this name: proceed
+        var accountQuery = {
+          text: '\
           insert into account (username, base_keyring_id) \
           values ($1, nextval(\'version_identifier\')) \
           returning account_id, base_keyring_id',
-	  values: [
-            account.username
-	  ]
-	};
+          values: [
+            account.username,
+          ],
+        };
 
-	client.query(accountQuery, function (err, result) {
-	  if (err) {
+        client.query(accountQuery, function(err, result) {
+          if (err) {
             client.query('rollback');
             done();
 
@@ -97,10 +97,11 @@ exports.saveAccount = function saveAccount(account, callback) {
               logger.error('Unhandled database error: ' + err);
               callback('Database error.');
             }
-            return;
-	  }
 
-	  var keyringQuery = {
+            return;
+          }
+
+          var keyringQuery = {
             text: '\
               insert into base_keyring ( \
               base_keyring_id, account_id, \
@@ -127,37 +128,38 @@ exports.saveAccount = function saveAccount(account, callback) {
               account.signKeyPub,
               account.signKeyPrivateMacSalt,
               account.signKeyPrivateCiphertext,
-              account.signKeyPrivateMac
-            ]
-	  };
+              account.signKeyPrivateMac,
+            ],
+          };
 
-	  client.query(keyringQuery, function (err) {
+          client.query(keyringQuery, function(err) {
             if (err) {
               client.query('rollback');
               done();
 
               if (err.code === '23514') {
-		callback('Invalid keyring data.');
+                callback('Invalid keyring data.');
               } else {
-		logger.error('Unhandled database error: ' + err);
-		callback('Database error.');
+                logger.error('Unhandled database error: ' + err);
+                callback('Database error.');
               }
+
               return;
             }
 
-	    client.query('commit', function () {
+            client.query('commit', function() {
               done();
               callback();
             }); // Commit
-	  }); // KeyRing Query
-	}); // AccountQuery
+          }); // KeyRing Query
+        }); // AccountQuery
 
       } else {
-	// We found a username that is the same!
-	client.query('rollback');
-	done();
-	callback('Username already taken.');
-	return;
+        // We found a username that is the same!
+        client.query('rollback');
+        done();
+        callback('Username already taken.');
+        return;
       } // end 'proceed' section
     }); //CheckAccountFree
   }); // Connect
@@ -175,7 +177,7 @@ exports.saveAccount = function saveAccount(account, callback) {
  * @param {Function} callback
  */
 exports.getAccount = function getAccount(username, callback) {
-  connect(function (client, done) {
+  connect(function(client, done) {
     var accountQuery = {
       text: '\
         select username, \
@@ -189,11 +191,11 @@ exports.getAccount = function getAccount(username, callback) {
         from account left join base_keyring using (base_keyring_id) \
         where username = $1',
       values: [
-        username
-      ]
+        username,
+      ],
     };
 
-    client.query(accountQuery, function (err, result) {
+    client.query(accountQuery, function(err, result) {
       done();
 
       if (err) {
@@ -201,6 +203,7 @@ exports.getAccount = function getAccount(username, callback) {
         callback('Database error.');
         return;
       }
+
       if (!result.rows.length) {
         callback('Account not found.');
         return;
@@ -222,7 +225,7 @@ exports.getAccount = function getAccount(username, callback) {
         signKeyPub: JSON.parse(result.rows[0].sign_key_pub.toString()),
         signKeyPrivateMacSalt: JSON.parse(result.rows[0].sign_key_private_mac_salt.toString()),
         signKeyPrivateCiphertext: JSON.parse(result.rows[0].sign_key_private_ciphertext.toString()),
-        signKeyPrivateMac: result.rows[0].sign_key_private_mac.toString()
+        signKeyPrivateMac: result.rows[0].sign_key_private_mac.toString(),
       });
     });
   });
@@ -240,7 +243,7 @@ exports.getAccount = function getAccount(username, callback) {
  * @param {Function} callback
  */
 exports.getAccountById = function getAccountById(accountId, callback) {
-  connect(function (client, done) {
+  connect(function(client, done) {
     var accountQuery = {
       text: '\
         select account.account_id, \
@@ -254,11 +257,11 @@ exports.getAccountById = function getAccountById(accountId, callback) {
         from account left join base_keyring using (base_keyring_id) \
         where account.account_id = $1',
       values: [
-        accountId
-      ]
+        accountId,
+      ],
     };
 
-    client.query(accountQuery, function (err, result) {
+    client.query(accountQuery, function(err, result) {
       done();
 
       if (err) {
@@ -266,6 +269,7 @@ exports.getAccountById = function getAccountById(accountId, callback) {
         callback('Database error.');
         return;
       }
+
       if (!result.rows.length) {
         callback('Account not found.');
         return;
@@ -287,7 +291,7 @@ exports.getAccountById = function getAccountById(accountId, callback) {
         signKeyPub: JSON.parse(result.rows[0].sign_key_pub.toString()),
         signKeyPrivateMacSalt: JSON.parse(result.rows[0].sign_key_private_mac_salt.toString()),
         signKeyPrivateCiphertext: JSON.parse(result.rows[0].sign_key_private_ciphertext.toString()),
-        signKeyPrivateMac: result.rows[0].sign_key_private_mac.toString()
+        signKeyPrivateMac: result.rows[0].sign_key_private_mac.toString(),
       });
     });
   });
@@ -304,8 +308,8 @@ exports.getAccountById = function getAccountById(accountId, callback) {
  * @param {Object} options
  * @param {Function} callback
  */
-exports.saveMessage = function (options, callback) {
-  connect(function (client, done) {
+exports.saveMessage = function(options, callback) {
+  connect(function(client, done) {
     var messageQuery = {
       text: '\
         insert into message \
@@ -317,11 +321,11 @@ exports.saveMessage = function (options, callback) {
         options.toAccountId,
         options.fromAccountId,
         options.headersCiphertext,
-        options.payloadCiphertext
-      ]
+        options.payloadCiphertext,
+      ],
     };
 
-    client.query(messageQuery, function (err, result) {
+    client.query(messageQuery, function(err, result) {
       done();
 
       if (err) {
@@ -346,13 +350,13 @@ exports.saveMessage = function (options, callback) {
  * @param {Object} options
  * @param {Function} callback
  */
-exports.getUserCount = function (callback) {
-  connect(function (client, done) {
+exports.getUserCount = function(callback) {
+  connect(function(client, done) {
     var userCountQuery = {
-      text: 'select count(*) from account'
+      text: 'select count(*) from account',
     };
 
-    client.query(userCountQuery, function (err, result) {
+    client.query(userCountQuery, function(err, result) {
       done();
 
       if (err) {
@@ -389,7 +393,7 @@ exports.updateKeyring = function updateKeyring(keyring, callback) {
     'signKeyPrivateCiphertext',
     'signKeyPrivateMac',
     'containerNameHmacKeyCiphertext',
-    'hmacKeyCiphertext'
+    'hmacKeyCiphertext',
   ];
 
   for (var i in requiredFields) {
@@ -398,7 +402,8 @@ exports.updateKeyring = function updateKeyring(keyring, callback) {
       return;
     }
   }
-  connect(function (client, done) {
+
+  connect(function(client, done) {
     var keyringQuery = {
       text: '\
       update base_keyring \
@@ -426,11 +431,11 @@ exports.updateKeyring = function updateKeyring(keyring, callback) {
         keyring.srpSalt,
         keyring.signKeyPrivateMacSalt,
         keyring.signKeyPrivateCiphertext,
-        keyring.signKeyPrivateMac
-      ]
+        keyring.signKeyPrivateMac,
+      ],
     };
 
-    client.query(keyringQuery, function (err) {
+    client.query(keyringQuery, function(err) {
       if (err) {
         client.query('rollback');
         done();
@@ -441,10 +446,11 @@ exports.updateKeyring = function updateKeyring(keyring, callback) {
           logger.error('Unhandled database error: ' + err);
           callback('Database error.');
         }
+
         return;
       }
 
-      client.query('commit', function () {
+      client.query('commit', function() {
         done();
         callback();
       });
