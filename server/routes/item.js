@@ -131,7 +131,7 @@ app.post('/createitem', verifySession, function (req, res) {
 
 /**!
  * ### POST /removeitem
- * Create item value for the given `itemNameHmac`
+ * Remove item for the given `itemNameHmac`
 */
 app.post('/removeitem', verifySession, function (req, res) {
   var item = new Item();
