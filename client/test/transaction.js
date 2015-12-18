@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 'use strict';
 
@@ -20,9 +20,9 @@ var assert = chai.assert;
 // most of the transaction functions are simply
 // HTTP calls, which are tested in integration tests
 
-describe('Transactions', function () {
-  describe('default properties', function () {
-    it('should have the correct types array', function () {
+describe('Transactions', function() {
+  describe('default properties', function() {
+    it('should have the correct types array', function() {
       var tx = new crypton.Transaction(null);
       var expectedTypes = [
         'addAccount',
@@ -33,19 +33,19 @@ describe('Transactions', function () {
         'addContainerSessionKeyShare',
         'addContainerRecord',
         'addMessage',
-        'deleteMessage'
+        'deleteMessage',
       ];
 
       assert.deepEqual(tx.types, expectedTypes);
     });
   });
 
-  describe('save()', function () {
+  describe('save()', function() {
     // TODO how should we test this outside of integration tests?
   });
 
-  describe('verify()', function () {
-    it('should throw if there is no transaction id', function () {
+  describe('verify()', function() {
+    it('should throw if there is no transaction id', function() {
       var err = null;
       var tx = new crypton.Transaction(null);
 
@@ -58,7 +58,7 @@ describe('Transactions', function () {
       assert.equal(err.message, 'Invalid transaction');
     });
 
-    it('should not throw if there is a transaction id', function () {
+    it('should not throw if there is a transaction id', function() {
       var err = null;
       var tx = new crypton.Transaction(null);
       tx.id = 'foo';
@@ -73,8 +73,8 @@ describe('Transactions', function () {
     });
   });
 
-  describe('verifyChunk()', function () {
-    it('should throw if not given chunk', function () {
+  describe('verifyChunk()', function() {
+    it('should throw if not given chunk', function() {
       var err = null;
       var tx = new crypton.Transaction(null);
 
@@ -87,13 +87,13 @@ describe('Transactions', function () {
       assert.equal(err.message, 'Invalid transaction chunk type');
     });
 
-    it('should throw if chunk has invalid type', function () {
+    it('should throw if chunk has invalid type', function() {
       var err = null;
       var tx = new crypton.Transaction(null);
 
       try {
         tx.verifyChunk({
-          type: 'nope'
+          type: 'nope',
         });
       } catch (e) {
         err = e;
@@ -102,13 +102,13 @@ describe('Transactions', function () {
       assert.equal(err.message, 'Invalid transaction chunk type');
     });
 
-    it('should not throw if chunk has valid type', function () {
+    it('should not throw if chunk has valid type', function() {
       var err = null;
       var tx = new crypton.Transaction(null);
 
       try {
         tx.verifyChunk({
-          type: 'addContainer'
+          type: 'addContainer',
         });
       } catch (e) {
         err = e;

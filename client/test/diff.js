@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 'use strict';
 
@@ -22,8 +22,8 @@ var assert = chai.assert;
 // We will assume that the diff library is
 // well tested including edge cases
 
-describe('Differ', function () {
-  it('should return null if unchanged', function () {
+describe('Differ', function() {
+  it('should return null if unchanged', function() {
     var old = {};
     var current = {};
     var delta = crypton.diff.create(old, current);
@@ -31,20 +31,20 @@ describe('Differ', function () {
   });
 
   // TODO what other types of structures should we test here?
-  it('should return the appropriate output for changes', function () {
+  it('should return the appropriate output for changes', function() {
     var old = {};
     var current = {
-      foo: {
-        bar: 'baz'
-      }
+      foo: { bar: 'baz' },
     };
     var delta = crypton.diff.create(old, current);
-    assert.deepEqual(delta, { foo: [ { bar: 'baz' } ] });
+    assert.deepEqual(delta, {
+      foo: [{ bar: 'baz' }],
+    });
   });
 });
 
-describe('Patcher', function () {
-  it('should return null if given null delta', function () {
+describe('Patcher', function() {
+  it('should return null if given null delta', function() {
     var old = {};
     var delta = null;
     var current = crypton.diff.apply(old, delta);
@@ -53,17 +53,22 @@ describe('Patcher', function () {
 
   // TODO how else should we test this?
   // TODO should we make the abstraction async and wrap patch() in a try/catch?
-  it('should err if given non-null non-object delta', function () {
+  it('should err if given non-null non-object delta', function() {
     var old = {};
-    var delta = [ { foo: { bar: [ 'baz' ] } } ];
+    var delta = [{
+      foo: {
+        bar: ['baz'],
+      },
+    }];
+
     try {
-      var current = crypton.diff.apply(delta, old);
+      crypton.diff.apply(delta, old);
     } catch (e) {
       assert.equal(e.message, 'cannot apply patch at "/": object expected');
     }
   });
 
-  it('should not change anything if given blank input', function () {
+  it('should not change anything if given blank input', function() {
     var old = {};
     var delta = {};
     var current = crypton.diff.apply(delta, old);
@@ -71,14 +76,17 @@ describe('Patcher', function () {
   });
 
   // TODO how else should we test this?
-  it('should return the appropriate output for changes', function () {
+  it('should return the appropriate output for changes', function() {
     var old = {};
-    var delta = { foo: [ { bar: 'baz' } ] };
+    var delta = {
+      foo: [{
+        bar: 'baz',
+      }]
+    };
+
     var current = crypton.diff.apply(delta, old);
     assert.deepEqual(current, {
-      foo: {
-        bar: 'baz'
-      }
+      foo: { bar: 'baz' },
     });
   });
 });
