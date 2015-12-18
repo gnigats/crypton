@@ -97,6 +97,7 @@ compile () {
     src/item.js \
     src/history.js \
     src/errors.js \
+    node_modules/bcryptjs/dist/bcrypt.js \
     src/vendor/*.js \
     | sed 's/PACKAGE_VERSION/'$VERSION'/' \
     > dist/crypton.js
