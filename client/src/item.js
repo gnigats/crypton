@@ -298,7 +298,6 @@
     // post create item
     var url = crypton.url() + '/createitem?sid=' + crypton.sessionId;
     superagent.post(url).withCredentials()
-      // .set('X-Session-ID', crypton.sessionId)
       .send(payload).end(function(res) {
         if (!res.body.success) {
           return callback('Cannot create item');
@@ -396,7 +395,6 @@
 
     superagent.post(url)
       .withCredentials()
-      // .set('X-Session-ID', crypton.sessionId)
       .send(payload)
       .end(function(res) {
         if (!res.body.success) {
@@ -441,7 +439,6 @@
 
     superagent.post(url)
       .withCredentials()
-      // .set('X-Session-ID', crypton.sessionId)
       .send(payload)
       .end(function(res) {
         if (!res.body.success) {

@@ -243,7 +243,6 @@
     console.log('getHistory', url);
     superagent.get(url)
       .withCredentials()
-      // .set('X-Session-ID', crypton.sessionId)
       .end(function(res) {
         if (!res.body || res.body.success !== true) {
           callback(res.body.error);
