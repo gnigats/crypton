@@ -41,7 +41,10 @@ describe('Card', function() {
 
     var hex = hexcolor.substring(1, 7);
     var expectedRGB = getRGBFromHex(hex);
-    var red, green, blue;
+    var red;
+    var green;
+    var blue;
+
     red = data[0];
     green = data[1];
     blue = data[2];

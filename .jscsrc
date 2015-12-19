@@ -1,4 +1,6 @@
 {
+  "excludeFiles": ["src/vendor/**", "node_modules/**", "dist/**", "examples/**"],
+  "maxErrors": 1000,
   "esnext": true,
   "disallowSpacesInNamedFunctionExpression": {
     "beforeOpeningRoundBrace": true
@@ -26,6 +28,7 @@
   "disallowMixedSpacesAndTabs": true,
   "disallowTrailingWhitespace": true,
   "requireTrailingComma": {
+    "ignoreSingleValue": true,
     "ignoreSingleLine": true
   },
   "requireSpaceAfterComma": true,
@@ -70,6 +73,9 @@
     "allExcept": "firstAfterCurly"
   },
   "requirePaddingNewLinesAfterBlocks": true,
+  "requirePaddingNewLinesAfterBlocks": {
+    "allExcept": ["inCallExpressions", "inNewExpressions", "inArrayExpressions", "inProperties"]
+  },
   "requireSemicolons": true,
   "safeContextKeyword": "_this",
   "validateLineBreaks": "LF",

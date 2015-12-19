@@ -265,6 +265,7 @@
       return callback('Could not parse record payload');
     }
 
+    /*
     if (payload.recordIndex !== expectedRecordIndex) {
       // TODO revisit
       // XXX ecto 3/4/14 I ran into a problem with this quite a while
@@ -276,6 +277,7 @@
 
       // return callback('Record index mismatch');
     }
+    */
 
     callback(null, {
       time: +new Date(creationTime),
