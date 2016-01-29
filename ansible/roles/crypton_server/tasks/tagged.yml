@@ -167,6 +167,7 @@
 
 - name: install nginx config
   sudo: yes
+  tags: crypton_nginx_config
   template: >
     src=nginx-site.conf.j2
     dest=/etc/nginx/sites-available/{{ item.1.name }}.{{ item.1.domain|default(crypton_domain) }}.conf
