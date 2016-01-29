@@ -2,7 +2,7 @@
   "author": "SpiderOak (https://spideroak.com/)",
   "name": "crypton-server",
   "description": "A zero-knowledge application framework",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "homepage": "https://crypton.io",
   "license": "AGPL-3.0",
   "repository": {
