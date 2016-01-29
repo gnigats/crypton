@@ -10,29 +10,29 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License. 
-*/
+ * limitations under the License.
+ */
 
 (function() {
 
-'use strict';
+  'use strict';
 
-function Errors () {};
+  function Errors() {}
 
-Errors.prototype = {
-  // Crypton system error strings
-  ARG_MISSING_CALLBACK:  'Callback argument is required',
-  ARG_MISSING_STRING: 'String argument is required',
-  ARG_MISSING_OBJECT: 'Object argument is required',
-  ARG_MISSING: 'Missing required argument',
-  PROPERTY_MISSING: 'Missing object property',
-  UNWRAP_KEY_ERROR: 'Cannot unwrap session key',
-  DECRYPT_CIPHERTEXT_ERROR: 'Cannot decrypt ciphertext',
-  UPDATE_PERMISSION_ERROR: 'Update permission denied',
-  LOCAL_ITEM_MISSING: 'Cannot delete local Item, not currently cached',
-  PEER_MESSAGE_SEND_FAILED: 'Cannot send message to peer'
-};
+  Errors.prototype = {
+    // Crypton system error strings
+    ARG_MISSING_CALLBACK: 'Callback argument is required',
+    ARG_MISSING_STRING: 'String argument is required',
+    ARG_MISSING_OBJECT: 'Object argument is required',
+    ARG_MISSING: 'Missing required argument',
+    PROPERTY_MISSING: 'Missing object property',
+    UNWRAP_KEY_ERROR: 'Cannot unwrap session key',
+    DECRYPT_CIPHERTEXT_ERROR: 'Cannot decrypt ciphertext',
+    UPDATE_PERMISSION_ERROR: 'Update permission denied',
+    LOCAL_ITEM_MISSING: 'Cannot delete local Item, not currently cached',
+    PEER_MESSAGE_SEND_FAILED: 'Cannot send message to peer',
+  };
 
-crypton.errors = new Errors();
+  crypton.errors = new Errors();
 
 })();

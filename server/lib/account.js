@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the Affero GNU General Public License
  * along with Crypton Server.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 'use strict';
 
@@ -31,7 +31,7 @@ var validator = require('validator');
  * var account = new Account();
  * ````
  */
-var Account = module.exports = function Account () {};
+var Account = module.exports = function Account() {};
 
 /**!
  * ### get(username, callback)
@@ -44,18 +44,18 @@ var Account = module.exports = function Account () {};
  * @param {String} username
  * @param {Function} callback
  */
-Account.prototype.get = function (username, callback) {
+Account.prototype.get = function(username, callback) {
   logger.info('getting account for username: ' + username);
 
-  var that = this;
+  var _this = this;
 
-  db.getAccount(username, function (err, account) {
+  db.getAccount(username, function(err, account) {
     if (err) {
       callback(err);
       return;
     }
 
-    that.update(account);
+    _this.update(account);
     callback(null);
   });
 };
@@ -71,18 +71,18 @@ Account.prototype.get = function (username, callback) {
  * @param {Number} id
  * @param {Function} callback
  */
-Account.prototype.getById = function (id, callback) {
+Account.prototype.getById = function(id, callback) {
   logger.info('getting account for id: ' + id);
 
-  var that = this;
+  var _this = this;
 
-  db.getAccountById(id || this.id, function (err, account) {
+  db.getAccountById(id || this.id, function(err, account) {
     if (err) {
       callback(err);
       return;
     }
 
-    that.update(account);
+    _this.update(account);
     callback(null);
   });
 };
@@ -105,13 +105,14 @@ Account.prototype.beginSrp = function(srpA, callback) {
     return;
   }
 
-  var that = this;
+  var _this = this;
   srp.genKey(function(err, srpb) {
     if (err) {
       callback(err);
       return;
     }
-    that.continueSrp(srpA, srpb, callback);
+
+    _this.continueSrp(srpA, srpb, callback);
   });
 };
 
@@ -135,10 +136,11 @@ Account.prototype.continueSrp = function(srpA, srpb, callback) {
     callback('srpA is invalid');
     return;
   }
+
   callback(null, {
     b: srpb.toString('hex'),
     B: srpServer.computeB().toString('hex'),
-    A: srpA
+    A: srpA,
   });
 };
 
@@ -175,11 +177,12 @@ Account.prototype.checkSrp = function(srpParams, srpM1, callback) {
 
   try {
     srpM2 = srpServer.checkM1(new Buffer(srpM1, 'hex'));
-  } catch(e) {
+  } catch (e) {
     callback('Incorrect password');
     logger.info('SRP verification error: ' + e.toString());
     return;
   }
+
   // Don't need this right now. Maybe later?
   //var srpK = srpServer.computeK();
 
@@ -197,14 +200,15 @@ Account.prototype.checkSrp = function(srpParams, srpM1, callback) {
  *
  * @param {Object} input
  */
-// TODO add field validation and callback
-Account.prototype.update = function () {
+Account.prototype.update = function() {
+  // TODO add field validation and callback
+
   // update({ key: 'value' });
   if (typeof arguments[0] === 'object') {
     for (var key in arguments[0]) {
-        if (arguments[0].hasOwnProperty(key)) {
-            this[key] = arguments[0][key];
-        }
+      if (arguments[0].hasOwnProperty(key)) {
+        this[key] = arguments[0][key];
+      }
 
     }
   }
@@ -221,7 +225,7 @@ Account.prototype.update = function () {
  *
  * @return {Object} account
  */
-Account.prototype.toJSON = function () {
+Account.prototype.toJSON = function() {
   var fields = {};
 
   for (var i in this) {
@@ -243,26 +247,26 @@ Account.prototype.toJSON = function () {
  *
  * @param {Function} callback
  */
-Account.prototype.save = function (callback) {
+Account.prototype.save = function(callback) {
   logger.info('saving account');
 
-  var that = this;
+  var _this = this;
 
-  function _saveUser () {
-    if (!that.username) {
+  function _saveUser() {
+    if (!_this.username) {
       return callback('undefined is not a valid username');
     }
 
     // TODO: additional validation on any other account properties that need validation
-    if (that.username.length > 32) {
+    if (_this.username.length > 32) {
       return callback('Username is not valid: exceeds 32 charcters!');
     }
 
-    if (!validator.isAlphanumeric(that.username)) {
+    if (!validator.isAlphanumeric(_this.username)) {
       return callback('Username is not valid: it is not alphanumeric!');
     }
 
-    db.saveAccount(that.toJSON(), callback);
+    db.saveAccount(_this.toJSON(), callback);
   }
 
   return _saveUser();
@@ -280,7 +284,7 @@ Account.prototype.save = function (callback) {
  * @param {Object} options
  * @param {Function} callback
  */
-Account.prototype.sendMessage = function (options, callback) {
+Account.prototype.sendMessage = function(options, callback) {
   // TODO is this necessary if we're just passing `options` into db.saveMessage?
   if (!this.accountId) {
     logger.warn('accountId was not supplied');
@@ -292,20 +296,21 @@ Account.prototype.sendMessage = function (options, callback) {
 
   logger.info('saving message for account id: ' + toAccountId);
 
-  db.saveMessage(options, function (err, messageId) {
+  db.saveMessage(options, function(err, messageId) {
     if (err) {
       callback('Database error');
       return;
     }
 
-    // there is definitely a better way to get the username to the receipient
+    // there is definitely a better way to get the username to the recipient
     var sender = new Account();
-    sender.getById(options.fromAccountId, function (err) {
+    sender.getById(options.fromAccountId, function(err) {
+      // FIXME : 'err' is never even checked!
       if (app.clients[toAccountId]) {
         logger.info('sending message over websocket');
 
         app.clients[toAccountId].emit('message', {
-          messageId: messageId
+          messageId: messageId,
         });
       }
     });
@@ -325,7 +330,7 @@ Account.prototype.sendMessage = function (options, callback) {
  * @param {Object} keyring
  * @param {Function} callback
  */
-Account.prototype.changePassphrase = function (keyring, callback) {
+Account.prototype.changePassphrase = function(keyring, callback) {
   if (typeof keyring !== 'object') {
     return callback('changePassphrase failed, keyring object required.');
   }

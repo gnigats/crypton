@@ -11,26 +11,28 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 'use strict';
+
+var assert = chai.assert;
 
 // tests running inside phantom on Travis CI
 // don't let the PRNG seed fast enough
 crypton.paranoia = 0;
-sjcl.random.addEntropy("foo", 1024);
+sjcl.random.addEntropy('foo', 1024);
 
 var assert = chai.assert;
 
-function setupAccount () {
+function setupAccount() {
   var account = new crypton.Account();
   account.passphrase = 'pass';
   account.username = 'user';
   account.srpVerifier = 'verifier';
   account.srpSalt = 'salt';
-  account.keypairSalt = [-1601113307,-147606214,-62907260,1664396850,1038241656,596952288,-1676728508,-743835030];
-  account.keypairMacSalt = [-1601113307,-147606214,-62907260,1664396850,1038241656,596952288,-1676728508,-743835030];
-  account.signKeyPrivateMacSalt = [-1601113307,-147606214,-62907260,1664396850,1038241656,596952288,-1676728508,-743835030];
+  account.keypairSalt = [-1601113307, -147606214, -62907260, 1664396850, 1038241656, 596952288, -1676728508, -743835030];
+  account.keypairMacSalt = [-1601113307, -147606214, -62907260, 1664396850, 1038241656, 596952288, -1676728508, -743835030];
+  account.signKeyPrivateMacSalt = [-1601113307, -147606214, -62907260, 1664396850, 1038241656, 596952288, -1676728508, -743835030];
 
   var keypairCurve = 384;
 
@@ -53,7 +55,7 @@ function setupAccount () {
 
   var selfPeer = new crypton.Peer({
     session: session,
-    pubKey: keypair.pub
+    pubKey: keypair.pub,
   });
   selfPeer.trusted = true;
 
@@ -71,19 +73,19 @@ function setupAccount () {
   return account;
 }
 
-describe('Account', function () {
+describe('Account', function() {
 
   this.timeout(20000);
 
-  describe('save()', function () {
+  describe('save()', function() {
     // TODO should we just test this in the integration tests?
   });
 
-  describe('unravel()', function () {
-    it('should generate the correct fields from given values', function (done) {
+  describe('unravel()', function() {
+    it('should generate the correct fields from given values', function(done) {
       var account = setupAccount();
 
-      account.unravel(function (err) {
+      account.unravel(function(err) {
         var fields = [
           'srpVerifier',
           'srpSalt',
@@ -92,7 +94,7 @@ describe('Account', function () {
           'containerNameHmacKey',
           'hmacKey',
           'signKeyPub',
-          'signKeyPrivate'
+          'signKeyPrivate',
         ];
 
         assert.equal(err, undefined);
@@ -105,59 +107,59 @@ describe('Account', function () {
       });
     });
 
-    it('should fail if containerNameHmacKey does not verify', function (done) {
+    it('should fail if containerNameHmacKey does not verify', function(done) {
       var account = setupAccount();
 
       // Modify the iv to provoke an invalid signature
       var iv = account.containerNameHmacKeyCiphertext.ciphertext.iv;
-      account.containerNameHmacKeyCiphertext.ciphertext.iv = iv.substr(0, iv.length-2) + 'AA';
+      account.containerNameHmacKeyCiphertext.ciphertext.iv = iv.substr(0, iv.length - 2) + 'AA';
 
-      account.unravel(function (err) {
+      account.unravel(function(err) {
         assert(err !== undefined);
         done();
       });
     });
 
-    it('should fail if hmacKey does not verify', function (done) {
+    it('should fail if hmacKey does not verify', function(done) {
       var account = setupAccount();
 
       // Modify the iv to provoke an invalid signature
       var iv = account.hmacKeyCiphertext.ciphertext.iv;
-      account.hmacKeyCiphertext.ciphertext.iv = iv.substr(0, iv.length-2) + 'AA';
+      account.hmacKeyCiphertext.ciphertext.iv = iv.substr(0, iv.length - 2) + 'AA';
 
-      account.unravel(function (err) {
+      account.unravel(function(err) {
         assert(err !== undefined);
         done();
       });
     });
 
-    it('should fail if secretKey does not verify', function (done) {
+    it('should fail if secretKey does not verify', function(done) {
       var account = setupAccount();
 
       // Modify the mac slightly to provoke an invalid one
       var mac = account.keypairMac;
-      account.keypairMac = mac.substr(0, mac.length-2) + 'AA';
+      account.keypairMac = mac.substr(0, mac.length - 2) + 'AA';
 
-      account.unravel(function (err) {
+      account.unravel(function(err) {
         assert.notEqual(err, undefined);
         done();
       });
     });
 
-    it('should fail if signKeyPrivate does not verify', function (done) {
+    it('should fail if signKeyPrivate does not verify', function(done) {
       var account = setupAccount();
 
       // Modify the mac slightly to provoke an invalid one
       var mac = account.signKeyPrivateMac;
-      account.signKeyPrivateMac = mac.substr(0, mac.length-2) + 'AA';
+      account.signKeyPrivateMac = mac.substr(0, mac.length - 2) + 'AA';
 
-      account.unravel(function (err) {
+      account.unravel(function(err) {
         assert.notEqual(err, undefined);
         done();
       });
     });
 
-    it('should fail if pubKey is malformed', function (done) {
+    it('should fail if pubKey is malformed', function(done) {
       var account = setupAccount();
 
       // we can't just munge the pubKey point here
@@ -168,13 +170,13 @@ describe('Account', function () {
       var newPoint = curve.G.mult(newExponent);
       account.pubKey.point = newPoint.toBits();
 
-      account.unravel(function (err) {
+      account.unravel(function(err) {
         assert.equal(err, 'Server provided incorrect public key');
         done();
       });
     });
 
-    it('should fail if signKeyPub is malformed', function (done) {
+    it('should fail if signKeyPub is malformed', function(done) {
       var account = setupAccount();
 
       // we can't just munge the pubKey point here
@@ -185,7 +187,7 @@ describe('Account', function () {
       var newPoint = curve.G.mult(newExponent);
       account.signKeyPub.point = newPoint.toBits();
 
-      account.unravel(function (err) {
+      account.unravel(function(err) {
         // XXX ecto
         // if the the public signing key is bad,
         // verifyAndDecrypt will fail to verify
@@ -197,8 +199,8 @@ describe('Account', function () {
     });
   });
 
-  describe('serialize()', function () {
-    it('should return the correct fields', function () {
+  describe('serialize()', function() {
+    it('should return the correct fields', function() {
       var expected = [
         'srpVerifier',
         'srpSalt',
@@ -213,7 +215,7 @@ describe('Account', function () {
         'username',
         'signKeyPub',
         'signKeyPrivateCiphertext',
-        'signKeyPrivateMac'
+        'signKeyPrivateMac',
       ];
 
       var account = setupAccount();
@@ -221,7 +223,7 @@ describe('Account', function () {
       assert.deepEqual(Object.keys(serialized), expected);
     });
 
-    it('should return the correct values', function () {
+    it('should return the correct values', function() {
       var account = setupAccount();
       var ret = account.serialize();
       assert.deepEqual(ret.containerNameHmacKeyCiphertext, account.containerNameHmacKeyCiphertext);

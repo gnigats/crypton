@@ -11,11 +11,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 'use strict';
 
-describe('Card', function () {
+var assert = chai.assert;
+
+describe('Card', function() {
   var card = new crypton.Card();
   var username = 'drzhivago';
   var appname = 'noneofyourfingbizness';
@@ -23,7 +25,8 @@ describe('Card', function () {
   var url = 'https://crypton.io';
 
   // helper functions //////////////////////////////////////////////////////
-  function getRGBFromHex (hex) {
+
+  function getRGBFromHex(hex) {
     var bigint = parseInt(hex, 16);
     var r = (bigint >> 16) & 255;
     var g = (bigint >> 8) & 255;
@@ -38,7 +41,10 @@ describe('Card', function () {
 
     var hex = hexcolor.substring(1, 7);
     var expectedRGB = getRGBFromHex(hex);
-    var red, green, blue;
+    var red;
+    var green;
+    var blue;
+
     red = data[0];
     green = data[1];
     blue = data[2];
@@ -46,18 +52,19 @@ describe('Card', function () {
     assert.equal(green, expectedRGB[1]);
     assert.equal(blue, expectedRGB[2]);
   }
+
   // end helper functions /////////////////////////////////////////////////
 
-  describe('createFingerprintArr()', function () {
-    it('should create an array with 16 members', function (done) {
+  describe('createFingerprintArr()', function() {
+    it('should create an array with 16 members', function(done) {
       var arr = card.createFingerprintArr(fingerprint);
       assert.equal(arr.length, 16);
       done();
     });
   });
 
-  describe('createColorArr()', function () {
-    it('should create an array of hex color values', function (done) {
+  describe('createColorArr()', function() {
+    it('should create an array of hex color values', function(done) {
       var fingerArr = card.createFingerprintArr(fingerprint);
       var arr = card.createColorArr(fingerArr);
       assert.equal(arr.length, 16);
@@ -67,8 +74,8 @@ describe('Card', function () {
     });
   });
 
-  describe('createQRCode()', function () {
-    it('should generate a QR code in a canvas element', function (done) {
+  describe('createQRCode()', function() {
+    it('should generate a QR code in a canvas element', function(done) {
       var fingerArr = card.createFingerprintArr(fingerprint);
       var canvas = card.createQRCode(fingerArr, username, appname, url);
       testCanvasColorAt('#000000', canvas, 100, 100);
@@ -76,8 +83,8 @@ describe('Card', function () {
     });
   });
 
-  describe('createIdentigrid()', function () {
-    it('should generate a grid of colors based on the fingerprint', function (done) {
+  describe('createIdentigrid()', function() {
+    it('should generate a grid of colors based on the fingerprint', function(done) {
       var fingerArr = card.createFingerprintArr(fingerprint);
       var colorArr = card.createColorArr(fingerArr);
 
@@ -88,14 +95,15 @@ describe('Card', function () {
     });
   });
 
-  describe('createIDCard()', function () {
-    it('should generate the full ID Card',  function (done) {
+  describe('createIDCard()', function() {
+    it('should generate the full ID Card', function(done) {
       var fingerArr = card.createFingerprintArr(fingerprint);
       var colorArr = card.createColorArr(fingerArr);
 
       var domId = 'my-dom-id-is-the-best';
       var idCard = card.createIdCard(fingerprint, username, appname, url, domId);
       assert.equal(idCard.tagName, 'CANVAS');
+
       // testCanvasColorAt(255, idCard, 12, 205); // need to re-think these tests as the card design changed a little
       done();
     });

@@ -10,42 +10,41 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License. 
-*/
-
-(function () {
-
-'use strict';
-
-var Diff = crypton.diff = {};
-
-/**!
- * ### create(old, current)
- * Generate an object representing the difference between two inputs
- *
- * @param {Object} old
- * @param {Object} current
- * @return {Object} delta
+ * limitations under the License.
  */
-Diff.create = function (old, current) {
-  var delta = jsondiffpatch.diff(old, current);
-  return delta;
-};
 
-/**!
- * ### apply(delta, old)
- * Apply `delta` to `old` object to build `current` object
- *
- * @param {Object} delta
- * @param {Object} old
- * @return {Object} current
- */
-// TODO should we switch the order of these arguments?
-Diff.apply = function (delta, old) {
-  var current = JSON.parse(JSON.stringify(old));
-  jsondiffpatch.patch(current, delta);
-  return current;
-};
+(function() {
+
+  'use strict';
+
+  var Diff = crypton.diff = {};
+
+  /**!
+   * ### create(old, current)
+   * Generate an object representing the difference between two inputs
+   *
+   * @param {Object} old
+   * @param {Object} current
+   * @return {Object} delta
+   */
+  Diff.create = function(old, current) {
+    var delta = jsondiffpatch.diff(old, current);
+    return delta;
+  };
+
+  // TODO should we switch the order of these arguments?
+  /**!
+   * ### apply(delta, old)
+   * Apply `delta` to `old` object to build `current` object
+   *
+   * @param {Object} delta
+   * @param {Object} old
+   * @return {Object} current
+   */
+  Diff.apply = function(delta, old) {
+    var current = JSON.parse(JSON.stringify(old));
+    jsondiffpatch.patch(current, delta);
+    return current;
+  };
 
 })();
-

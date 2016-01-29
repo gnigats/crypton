@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 /* Crypton Server, Copyright 2013 SpiderOak, Inc.
  *
  * This file is part of Crypton Server.
@@ -15,7 +16,7 @@
  *
  * You should have received a copy of the Affero GNU General Public License
  * along with Crypton Server.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 'use strict';
 
@@ -32,7 +33,7 @@ var forever = require('forever');
 var version = require('../package.json').version;
 
 function getServer(callback) {
-  forever.list(false, function (err, data) {
+  forever.list(false, function(err, data) {
     if (err) {
       console.log(err);
       process.exit(1);
@@ -56,7 +57,7 @@ program
 
 program.command('run')
   .description('Run the server')
-  .action(function () {
+  .action(function() {
     process.configFile = program.config;
     process.docker = program.docker;
     var app = require('../app');
@@ -65,7 +66,7 @@ program.command('run')
 
 program.command('db:init')
   .description('Initialize the database')
-  .action(function () {
+  .action(function() {
     process.configFile = program.config;
     process.docker = program.docker;
     require('./init')();
@@ -73,7 +74,7 @@ program.command('db:init')
 
 program.command('db:drop')
   .description('Drop the database')
-  .action(function () {
+  .action(function() {
     process.configFile = program.config;
     process.docker = program.docker;
     require('./drop')();
@@ -81,8 +82,8 @@ program.command('db:drop')
 
 program.command('status')
   .description('Print the status of the daemonized server')
-  .action(function () {
-    getServer(function (data) {
+  .action(function() {
+    getServer(function(data) {
       if (!data) {
         console.log('No server daemon is running');
       } else {
@@ -93,15 +94,15 @@ program.command('status')
 
 program.command('start')
   .description('Daemonize the server')
-  .action(function () {
-    getServer(function (data) {
+  .action(function() {
+    getServer(function(data) {
       if (data) {
         console.log('Server daemon already running');
         process.exit(1);
       }
 
       var monitor = forever.startDaemon(__filename, {
-        options: [ 'run' ]
+        options: ['run'],
       });
 
       console.log('Server started');
@@ -110,8 +111,8 @@ program.command('start')
 
 program.command('stop')
   .description('Stop the daemonized server')
-  .action(function () {
-    getServer(function (data) {
+  .action(function() {
+    getServer(function(data) {
       if (!data) {
         console.log('Server daemon was not running');
         process.exit(1);
@@ -124,8 +125,8 @@ program.command('stop')
 
 program.command('restart')
   .description('Restart the daemonized server')
-  .action(function () {
-    getServer(function (data) {
+  .action(function() {
+    getServer(function(data) {
       if (!data) {
         console.log('Server daemon was not running');
         process.exit(1);
@@ -138,14 +139,14 @@ program.command('restart')
 
 program.command('logs')
   .description('Print the latest server logs')
-  .action(function () {
-    getServer(function (data) {
+  .action(function() {
+    getServer(function(data) {
       if (!data) {
         console.log('Server daemon is not running');
         process.exit(1);
       }
 
-      forever.tail(data.index, {}, function (err, log) {
+      forever.tail(data.index, {}, function(err, log) {
         console.log(log.line);
       });
     });
@@ -153,16 +154,16 @@ program.command('logs')
 
 program.command('tail')
   .description('Tail the server logs to STDOUT')
-  .action(function () {
-    getServer(function (data) {
+  .action(function() {
+    getServer(function(data) {
       if (!data) {
         console.log('Server daemon was not running');
         process.exit(1);
       }
 
       forever.tail(data.index, {
-        stream: true
-      }, function (err, log) {
+        stream: true,
+      }, function(err, log) {
         console.log(log.line);
       });
     });
@@ -170,7 +171,7 @@ program.command('tail')
 
 program.command('cleanlogs')
   .description('Remove the server logs')
-  .action(function () {
+  .action(function() {
     forever.cleanUp(true);
   });
 
