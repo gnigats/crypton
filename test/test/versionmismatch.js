@@ -23,7 +23,7 @@ describe('Version Mismatch checking', function () {
 
   describe('Account generation', function () {
     it('should refuse registrations when versions mismatch', function (done) {
-      if (semver.lte(crypton.version, '0.1.0')) {
+      if (semver.lte(crypton.version, '0.2.0')) {
         crypton.version = semver.inc(crypton.version, 'minor');
       } else {
         crypton.version = semver.inc(crypton.version, 'major');
