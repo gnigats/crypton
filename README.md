@@ -26,20 +26,24 @@ wget http://download.redis.io/redis-stable.tar.gz
 tar xvzf redis-stable.tar.gz
 cd redis-stable
 make
-
-sudo cp src/redis-server /usr/local/bin/
-sudo cp src/redis-cli /usr/local/bin/
+make test
+sudo make install
 ```
+
+Configuring and setting up redis to run is an environment specific problem
+and left as an exercise for the user. You may now be able to just simply
+do `redis-server &`
 
 ### Install PostgreSQL Database
 
-[PostgreSQL](http://www.postgresql.org/download/linux/) supports a variety of Linux versions:
+[PostgreSQL](http://www.postgresql.org/download/linux/) supports a variety of
+Linux versions. One of these install commands may work for you:
 
 - [Red Hat](http://www.postgresql.org/download/linux/redhat/): `yum install postgresql-server`
 
 - [Debian](http://www.postgresql.org/download/linux/debian/): `apt-get install postgresql-9.4`
 
-- [Ubuntu](http://www.postgresql.org/download/linux/ubuntu/): `apt-get install postgresql-9.4`
+- [Ubuntu](http://www.postgresql.org/download/linux/ubuntu/): `sudo apt-get install postgresql postgresql-contrib`
 
 - [SuSE](http://www.postgresql.org/download/linux/suse/): See the [official instructions](http://www.postgresql.org/download/linux/suse/) for more detail
 
@@ -66,22 +70,27 @@ After installation follow the instructions to copy the `launchd` plist file and 
 
 #### Create a new `postgres` database user using the `createuser` command.
 
-`createuser` is installed as part of the `postgresql` install.
+`createuser` is installed as part of the `postgresql` install. This command will
+create a new user called `postgres` that has superuser role permissions and
+can create roles.
 
 ````
-createuser -s -r postgres
+createuser --superuser --createrole postgres
 ````
 
 ## OS Common
 
 ### Install the [Node.js Version Manager](https://github.com/creationix/nvm) and Node.js
 
-See the [nvm](https://github.com/creationix/nvm) website for detailed installation instructions. Crypton currently expects Node.js version `4.2.1` to be installed which is the most current LTS release.
+See the [nvm](https://github.com/creationix/nvm) website for detailed installation instructions. Crypton currently expects Node.js version `4.2.2` to be installed which is the most current LTS release.
 
 ````
-curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.29.0/install.sh | bash
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.30.2/install.sh | bash
 
 nvm install 4.2.2
+
+# optional - set this as your default node install
+nvm alias default v4.2.2
 ````
 
 Verify your `node` installation:
@@ -114,6 +123,46 @@ You need to do this ***every*** time you `cd` into the `crypton` dir in every te
 npm install -g karma-cli
 ````
 
+## Configure your master postgres database user:
+
+You need to configure your environment specific config files for crypton to use
+the postgres database user that has superuser permissions. Edit the following
+files:
+
+```
+server/config/config.development.json
+server/config/config.test.json
+
+# create as needed from a copy of the other config files:
+server/config/config.production.json
+```
+
+In those files you need to change the `postgres_user` and `postgres_user_password`
+keys as appropriate for your environment. The user you configure must have
+postgres superuser permissions.
+
+e.g.
+```
+"database": {
+   "type": "postgres",
+   "postgres_user": "postgres",        <-- CHANGE AS NEEDED
+   "postgres_user_password": "",       <-- CHANGE AS NEEDED
+   "user": "crypton_development_user",
+   "password": "crypton_development_user_password",
+   "database": "crypton_development",
+   "host": "localhost",
+   "port": 5432
+ },
+ ...
+```
+
+The default is username `postgres` with an empty password.
+
+NOTE: If you are on Ubuntu Linux please note that you must have a username
+and password set for a postgres superuser and you need to ensure you can connect to the DB with `psql -U username`. You need to be able to do this
+without using `sudo` to first shell out to the `postgres` user that is created by
+the default installation scripts on Ubuntu. [This page might be of interest](https://stackoverflow.com/questions/7695962/postgresql-password-authentication-failed-for-user-postgres).
+
 ## Test that all Crypton dependencies are installed
 
 ````
@@ -135,7 +184,7 @@ npm install
 
 ## Build the Crypton Node.js Server and setup the DB
 
-The `db:init` command creates a `crypton_test_user` DB user, `crypton_test` database, and the appropriate DB schema in PostgreSQL.
+The `db:init` command creates a `crypton_ENVIRONMENT_user` DB user, `crypton_ENVIRONMENT` database, and the appropriate DB schema in PostgreSQL based on your `NODE_ENV`.
 
 ````
 cd crypton/server

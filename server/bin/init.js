@@ -1,14 +1,27 @@
 var fs = require('fs');
 var pg = require('pg').native;
-var config = require('../lib/config');
-var oldConfig;
-var realConfig = JSON.parse(fs.readFileSync('./server/config/config.' + process.env.NODE_ENV + '.json', 'utf8'));
-var dbConfig = realConfig.database;
+
+// will equal envConfig or postgresUserConfig depending on context
+var currentConfig;
+
+var envConfig = JSON.parse(fs.readFileSync(__dirname + '/../config/config.' + process.env.NODE_ENV + '.json', 'utf8'));
+
+// Clone the config and use the master postgres account for this server to
+// create the new user and DB we need, and then revert back to
+// using the env specific user and password for pg.
+// These values come from 'GIT_ROOT/server/config/config.ENVIRONMENT.json'
+var postgresUserConfig = JSON.parse(JSON.stringify(envConfig));
+postgresUserConfig.database.database = 'postgres';
+postgresUserConfig.database.user = postgresUserConfig.database.postgres_user;
+postgresUserConfig.database.password = postgresUserConfig.database.postgres_user_password;
 
 function connect(callback) {
   'use strict';
 
-  pg.connect(config.database, function(err, client, done) {
+  console.log("\nUsing DB config: ", currentConfig.database);
+
+  // Will connect with different users depending on what we are doing.
+  pg.connect(currentConfig.database, function(err, client, done) {
     if (err) {
       console.log(err);
       process.exit(1);
@@ -21,11 +34,11 @@ function connect(callback) {
 function createUser(callback) {
   'use strict';
 
-  console.log('Creating user...');
+  console.log('Creating user : ', envConfig.database.user);
 
   connect(function(client, done) {
     var query = {
-      text: 'create user ' + dbConfig.user + ' with encrypted password \'' + dbConfig.password + '\'',
+      text: 'CREATE USER ' + envConfig.database.user + ' WITH ENCRYPTED PASSWORD \'' + envConfig.database.password + '\'',
     };
 
     client.query(query, function(err, result) {
@@ -36,7 +49,7 @@ function createUser(callback) {
         return callback();
       }
 
-      console.log('User created');
+      console.log('Created user : ', envConfig.database.user);
       callback();
     });
   });
@@ -45,11 +58,11 @@ function createUser(callback) {
 function createDatabase(callback) {
   'use strict';
 
-  console.log('Creating database...');
+  console.log('Creating database : ', envConfig.database.database);
 
   connect(function(client, done) {
     var query = {
-      text: 'create database ' + dbConfig.database + ' with owner = ' + dbConfig.user,
+      text: 'CREATE DATABASE ' + envConfig.database.database + ' WITH OWNER = ' + envConfig.database.user
     };
 
     client.query(query, function(err, result) {
@@ -60,7 +73,8 @@ function createDatabase(callback) {
         return callback();
       }
 
-      console.log('Database created');
+      console.log('Created database : ', envConfig.database.database);
+
       callback();
     });
   });
@@ -94,13 +108,13 @@ function createSchema(callback) {
 module.exports = function() {
   'use strict';
 
-  oldConfig = JSON.parse(JSON.stringify(config));
-  config.database.user = 'postgres';
-  config.database.database = 'postgres';
-
+  // use the postgres master uname/pass so we can create the user and DB
+  currentConfig = JSON.parse(JSON.stringify(postgresUserConfig));
   createUser(function() {
     createDatabase(function() {
-      config = oldConfig;
+
+      // use the normal env specific config user/pass to do everything else.
+      currentConfig = JSON.parse(JSON.stringify(envConfig));
       createSchema(function() {
         console.log('Done');
         process.exit();
