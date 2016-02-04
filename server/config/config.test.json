@@ -1,6 +1,8 @@
 {
   "database": {
     "type": "postgres",
+    "postgres_user": "postgres",
+    "postgres_user_password": "",
     "user": "crypton_test_user",
     "password": "crypton_test_user_password",
     "database": "crypton_test",

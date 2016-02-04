@@ -44,8 +44,8 @@ if [ $POSTGRES_USER_EXISTS ]; then
   echo "Found postgres user..."
 else
   echo "Configuration issue: the postgres user does not exist in the database, please create it:"
-  echo "  createuser -s -r postgres"
-  echo "is one way to create the postgres user"
+  echo "  createuser --superuser --createrole postgres"
+  echo "is one possible way to create the postgres superuser"
   exit 1;
 fi
 

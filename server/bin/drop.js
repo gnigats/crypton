@@ -1,13 +1,24 @@
 var pg = require('pg').native;
-var config = require('../lib/config');
 var fs = require('fs');
-var realConfig = JSON.parse(fs.readFileSync('./server/config/config.' + process.env.NODE_ENV + '.json', 'utf8'));
-var dbConfig = realConfig.database;
+
+var envConfig = JSON.parse(fs.readFileSync(__dirname + '/../config/config.' + process.env.NODE_ENV + '.json', 'utf8'));
+
+// Clone the config and use the master postgres account for this server to
+// create the new user and DB we need, and then revert back to
+// using the env specific user and password for pg.
+// These values come from 'GIT_ROOT/server/config/config.ENVIRONMENT.json'
+var postgresUserConfig = JSON.parse(JSON.stringify(envConfig));
+postgresUserConfig.database.database = 'postgres';
+postgresUserConfig.database.user = postgresUserConfig.database.postgres_user;
+postgresUserConfig.database.password = postgresUserConfig.database.postgres_user_password;
 
 function connect(callback) {
   'use strict';
 
-  pg.connect(config.database, function(err, client, done) {
+  console.log('Using DB config : ', postgresUserConfig.database);
+
+  // For DROP functions, always connecting as the master postgres user.
+  pg.connect(postgresUserConfig.database, function(err, client, done) {
     if (err) {
       console.log(err);
       process.exit(1);
@@ -20,11 +31,11 @@ function connect(callback) {
 function dropDatabase(callback) {
   'use strict';
 
-  console.log('Dropping database...');
+  console.log('Dropping database : ', envConfig.database.database);
 
   connect(function(client, done) {
     var query = {
-      text: 'drop database ' + dbConfig.database,
+      text: 'DROP DATABASE ' + envConfig.database.database,
     };
 
     client.query(query, function(err, result) {
@@ -35,7 +46,7 @@ function dropDatabase(callback) {
         return callback();
       }
 
-      console.log('Dropped database');
+      console.log('Dropped database : ', envConfig.database.database);
       callback();
     });
   });
@@ -44,11 +55,11 @@ function dropDatabase(callback) {
 function dropUser(callback) {
   'use strict';
 
-  console.log('Dropping user...');
+  console.log('Dropping user : ', envConfig.database.user);
 
   connect(function(client, done) {
     var query = {
-      text: 'drop role ' + dbConfig.user,
+      text: 'DROP ROLE ' + envConfig.database.user,
     };
 
     client.query(query, function(err, result) {
@@ -59,7 +70,7 @@ function dropUser(callback) {
         return callback();
       }
 
-      console.log('Dropped user');
+      console.log('Dropped user : ', envConfig.database.user);
       callback();
     });
   });
@@ -68,12 +79,9 @@ function dropUser(callback) {
 module.exports = function() {
   'use strict';
 
-  config.database.user = 'postgres';
-  config.database.database = 'postgres';
-
   dropDatabase(function() {
     dropUser(function() {
-      console.log('Done');
+      console.log('Done dropping database and user.');
       process.exit();
     });
   });
