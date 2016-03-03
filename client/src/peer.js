@@ -74,8 +74,8 @@
         var peer = res.body.peer;
         _this.accountId = peer.accountId;
         _this.username = peer.username;
-	_this.pubKey = sjcl.ecc.deserialize(peer.pubKey);
-	_this.signKeyPub = sjcl.ecc.deserialize(peer.signKeyPub);
+        _this.pubKey = sjcl.ecc.deserialize(peer.pubKey);
+        _this.signKeyPub = sjcl.ecc.deserialize(peer.signKeyPub);
 
         // calculate fingerprint for public key
         _this.fingerprint = crypton.fingerprint(_this.pubKey, _this.signKeyPub);
