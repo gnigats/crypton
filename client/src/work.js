@@ -155,21 +155,17 @@
       return callback('Could not parse signKeySecret');
     }
 
-    var exponent = sjcl.bn.fromBits(ret.secret.exponent);
-    var secretKey = new sjcl.ecc.elGamal.secretKey(ret.secret.curve, sjcl.ecc.curves['c' + ret.secret.curve], exponent);
-
+    var secretKey = sjcl.ecc.deserialize(ret.secret);
     account.secretKey = secretKey;
 
     var session = {};
     session.account = account;
     session.account.signKeyPrivate = ret.signKeySecret;
 
-    var signPoint = sjcl.ecc.curves['c' + account.signKeyPub.curve].fromBits(account.signKeyPub.point);
-
     var selfPeer = new crypton.Peer({
       session: session,
       pubKey: account.pubKey,
-      signKeyPub: new sjcl.ecc.ecdsa.publicKey(account.signKeyPub.curve, signPoint.curve, signPoint),
+      signKeyPub: sjcl.ecc.deserialize(account.signKeyPub)
     });
     selfPeer.trusted = true;
 
@@ -239,9 +235,7 @@
     // reconstruct the peer's public signing key
     // the key itself typically has circular references which
     // we can't pass around with JSON to/from a worker
-    var curve = 'c' + peerSignKeyPubSerialized.curve;
-    var signPoint = sjcl.ecc.curves[curve].fromBits(peerSignKeyPubSerialized.point);
-    var peerSignKeyPub = new sjcl.ecc.ecdsa.publicKey(peerSignKeyPubSerialized.curve, signPoint.curve, signPoint);
+    var peerSignKeyPub = sjcl.ecc.deserialize(peerSignKeyPubSerialized);
 
     var verified = false;
     var payloadCiphertextHash = sjcl.hash.sha256.hash(JSON.stringify(record.ciphertext));

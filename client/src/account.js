@@ -84,43 +84,35 @@
    */
   Account.prototype.regenerateKeys = function(data, callback) {
     // reconstruct secret key
-    var exponent = sjcl.bn.fromBits(data.secret.exponent);
-    this.secretKey = new sjcl.ecc.elGamal.secretKey(data.secret.curve, sjcl.ecc.curves['c' + data.secret.curve], exponent);
+    this.secretKey = sjcl.ecc.deserialize(data.secret);
 
     // reconstruct public key
-    var point = sjcl.ecc.curves['c' + this.pubKey.curve].fromBits(this.pubKey.point);
-    this.pubKey = new sjcl.ecc.elGamal.publicKey(this.pubKey.curve, point.curve, point);
+    this.pubKey = sjcl.ecc.deserialize(this.pubKey);
 
     // assign the hmac keys to the account
     this.hmacKey = data.hmacKey;
     this.containerNameHmacKey = data.containerNameHmacKey;
 
     // reconstruct the public signing key
-    var signPoint = sjcl.ecc.curves['c' + this.signKeyPub.curve].fromBits(this.signKeyPub.point);
-    this.signKeyPub = new sjcl.ecc.ecdsa.publicKey(this.signKeyPub.curve, signPoint.curve, signPoint);
+    this.signKeyPub = sjcl.ecc.deserialize(this.signKeyPub);
 
     // reconstruct the secret signing key
-    var signExponent = sjcl.bn.fromBits(data.signKeySecret.exponent);
-    this.signKeyPrivate = new sjcl.ecc.ecdsa.secretKey(data.signKeySecret.curve, sjcl.ecc.curves['c' + data.signKeySecret.curve], signExponent);
+    this.signKeyPrivate = sjcl.ecc.deserialize(data.signKeySecret);
 
     // calculate fingerprint for public key
     this.fingerprint = crypton.fingerprint(this.pubKey, this.signKeyPub);
 
     // recalculate the public points from secret exponents
     // and verify that they match what the server sent us
-    var pubKeyHex = sjcl.codec.hex.fromBits(this.pubKey._point.toBits());
-    var pubKeyShouldBe = this.secretKey._curve.G.mult(exponent);
-    var pubKeyShouldBeHex = sjcl.codec.hex.fromBits(pubKeyShouldBe.toBits());
-
-    if (!crypton.constEqual(pubKeyHex, pubKeyShouldBeHex)) {
+    var cP = this.secretKey._curve.G.mult(this.secretKey._exponent);// calculated point 
+    var dP = this.pubKey.get(); // deserialized point
+    if (!sjcl.bitArray.equal(cP.x.toBits(), dP.x) || !sjcl.bitArray.equal(cP.y.toBits(), dP.y)) {
       return callback('Server provided incorrect public key');
     }
 
-    var signKeyPubHex = sjcl.codec.hex.fromBits(this.signKeyPub._point.toBits());
-    var signKeyPubShouldBe = this.signKeyPrivate._curve.G.mult(signExponent);
-    var signKeyPubShouldBeHex = sjcl.codec.hex.fromBits(signKeyPubShouldBe.toBits());
-
-    if (!crypton.constEqual(signKeyPubHex, signKeyPubShouldBeHex)) {
+    cP = this.signKeyPrivate._curve.G.mult(this.signKeyPrivate._exponent);
+    dP = this.signKeyPub.get(); 
+    if (!sjcl.bitArray.equal(cP.x.toBits(), dP.x) || !sjcl.bitArray.equal(cP.y.toBits(), dP.y)) {
       return callback('Server provided incorrect public signing key');
     }
 

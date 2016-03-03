@@ -74,15 +74,8 @@
         var peer = res.body.peer;
         _this.accountId = peer.accountId;
         _this.username = peer.username;
-        _this.pubKey = peer.pubKey;
-        _this.signKeyPub = peer.signKeyPub;
-
-        // this may be necessary
-        var point = sjcl.ecc.curves['c' + peer.pubKey.curve].fromBits(peer.pubKey.point);
-        _this.pubKey = new sjcl.ecc.elGamal.publicKey(peer.pubKey.curve, point.curve, point);
-        var signPoint =
-          sjcl.ecc.curves['c' + peer.signKeyPub.curve].fromBits(peer.signKeyPub.point);
-        _this.signKeyPub = new sjcl.ecc.ecdsa.publicKey(peer.signKeyPub.curve, signPoint.curve, signPoint);
+	_this.pubKey = sjcl.ecc.deserialize(peer.pubKey);
+	_this.signKeyPub = sjcl.ecc.deserialize(peer.signKeyPub);
 
         // calculate fingerprint for public key
         _this.fingerprint = crypton.fingerprint(_this.pubKey, _this.signKeyPub);

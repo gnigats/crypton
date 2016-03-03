@@ -46,7 +46,7 @@ function setupAccount() {
   var signingKeys = sjcl.ecc.ecdsa.generateKeys(384, crypton.paranoia);
 
   account.pubKey = keypair.pub.serialize();
-  account.signKeyPub = JSON.parse(JSON.stringify(signingKeys.pub.serialize()));
+  account.signKeyPub = signingKeys.pub.serialize();
 
   var sessionIdentifier = 'dummySession';
   var session = new crypton.Session(sessionIdentifier);
@@ -165,10 +165,13 @@ describe('Account', function() {
       // we can't just munge the pubKey point here
       // because SJCL will just throw, so we have to
       // find another point on the curve
-      var curve = sjcl.ecc.curves['c' + account.pubKey.curve];
+      var deserialized = sjcl.ecc.deserialize(account.pubKey);
+      var curve = sjcl.ecc.curves[account.pubKey.curve];
       var newExponent = sjcl.bn.random(curve.r, crypton.paranoia);
       var newPoint = curve.G.mult(newExponent);
-      account.pubKey.point = newPoint.toBits();
+      deserialized._point = newPoint;
+      var serialized = deserialized.serialize();
+      account.pubKey.point = serialized.point;
 
       account.unravel(function(err) {
         assert.equal(err, 'Server provided incorrect public key');
@@ -182,10 +185,13 @@ describe('Account', function() {
       // we can't just munge the pubKey point here
       // because SJCL will just throw, so we have to
       // find another point on the curve
-      var curve = sjcl.ecc.curves['c' + account.pubKey.curve];
+      var deserialized = sjcl.ecc.deserialize(account.signKeyPub);
+      var curve = sjcl.ecc.curves[account.signKeyPub.curve];
       var newExponent = sjcl.bn.random(curve.r, crypton.paranoia);
       var newPoint = curve.G.mult(newExponent);
-      account.signKeyPub.point = newPoint.toBits();
+      deserialized._point = newPoint;
+      var serialized = deserialized.serialize();
+      account.signKeyPub.point = serialized.point;
 
       account.unravel(function(err) {
         // XXX ecto

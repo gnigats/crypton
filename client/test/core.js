@@ -19,7 +19,7 @@ var assert = chai.assert;
 
 describe('Core', function() {
   before(function() {
-    sjcl.random.setDefaultParanoia(0);
+    sjcl.random.setDefaultParanoia(10);
   });
 
   this.timeout(30000);
